@@ -24,7 +24,7 @@ const restore = () => {
         centered: true,
         icon: createVNode(ExclamationCircleOutlined),
         content: '此操作会覆盖本地所有数据, 是否确认?',
-        okText: '删除',
+        okText: '确认',
         okType: 'danger',
         cancelText: '取消',
         onOk () {
