@@ -376,7 +376,8 @@ onMounted(() => {
           <!-- 每日数据 -->
           <div class="task-box" @click="onClickTask(current)">
             <a-badge
-              :count="getListData(current).length"
+              :overflowCount="999999999"
+              :count="calTimeTotal(getListData(current)) / 60"
               :number-style="{ backgroundColor: '#108ee9' }"
             />
           </div>
@@ -385,7 +386,8 @@ onMounted(() => {
           <!-- 年度数据 -->
           <div v-if="getMonthData(current)" class="notes-month">
             <a-badge
-              :count="getMonthData(current).length"
+              :overflowCount="999999999"
+              :count="calTimeTotal(getMonthData(current)) / 60"
               :number-style="{ backgroundColor: '#108ee9' }"
             />
           </div>
