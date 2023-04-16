@@ -15,7 +15,8 @@ import { Student } from '../types/type'
 const classObj = db.get('class')
 const [year, month] = queryYearMonthDay(dayjs())
 // 获取当月记录
-const monthObj = (classObj ?? classObj[year] ?? classObj[year][month]) || {}
+// const monthObj = (classObj ?? classObj[year] ?? classObj[year][month]) || {}
+const monthObj = classObj && classObj[year] && classObj[year][month] || {}
 
 // box1
 // 当前周数组
