@@ -15,3 +15,9 @@ export interface Student {
   frequencyList: TodayClass[]
   disabled: boolean
 }
+
+export interface SeriesData {
+  value: number
+  name: string
+  studentId?: number
+}

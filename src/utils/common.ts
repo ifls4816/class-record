@@ -2,12 +2,12 @@
  * @Description: 通用函数
  * @Author: IFLS
  * @Date: 2023-03-25 22:12:11
- * @LastEditTime: 2023-04-01 12:47:52
+ * @LastEditTime: 2023-05-03 20:33:28
  */
 import { message as Message } from 'ant-design-vue'
 import dayjs, { Dayjs, UnitType } from 'dayjs'
 import { db } from '../server/db/initDB'
-import { Student, TodayClass } from '../types/type'
+import { Student, SeriesData, TodayClass } from '../types/type'
 import { toRaw } from 'vue'
 
 // 操作成功提示
@@ -23,10 +23,19 @@ export const queryYearMonthDay = (currentDay: string | Dayjs): [number, number, 
 }
 
 // 根基课程列表计算课程总时间
-export const calTimeTotal = (arr: TodayClass[]) => {
-  const time = arr.reduce((total: number, currentVal: any) => {
-    return total + currentVal.timeDiff
-  }, 0)
+export const calTimeTotal = (arr: TodayClass[], studentId: number = -999): number => {
+  let time = 0
+  arr.forEach((val: any) => {
+    // 不传第二参数默认计算全部
+    if (studentId === -999) {
+      time += val.timeDiff
+    } else {
+      // 根据传入的学生id进行筛选
+      if (val.studentId === studentId) {
+        time += val.timeDiff
+      }
+    }
+  })
   return time
 }
 
@@ -106,4 +115,37 @@ export const getDaysArrayByWeek = () => {
     weekLastDay--
   }
   return arrDays
+}
+
+// 数组求和
+export const sumArr = (arr: number[]): number => {
+  return arr.reduce((total, value) => {
+    return total + value
+  }, 0)
+}
+
+// 根据学生id分组学生课时数据
+export const groupingById = (arr: TodayClass[]): SeriesData[] => {
+  const idArr: any = []
+  const resultData: SeriesData[] = []
+
+  for (let i = 0; i < arr.length; i++) {
+    if (idArr.indexOf(arr[i].studentId) === -1) {
+      const studentId = arr[i].studentId as number
+      resultData.push({
+        studentId: studentId,
+        value: arr[i].timeDiff / 60,
+        name: queryStudentInfo(studentId).name,
+      })
+      idArr.push(arr[i].studentId)
+    } else {
+      for (let j = 0; j < resultData.length; j++) {
+        if (resultData[j].studentId === arr[i].studentId) {
+          resultData[j].value += (arr[i].timeDiff / 60)
+          break
+        }
+      }
+    }
+  }
+  return resultData
 }

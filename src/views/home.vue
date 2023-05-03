@@ -46,8 +46,6 @@ const queryStudentList = () => {
   state.studentList = studentList
 }
 
-// 根据学生id查询学生信息
-
 // 查询课程列表
 const queryClassList = () => {
   const classObj = db.get('class')
