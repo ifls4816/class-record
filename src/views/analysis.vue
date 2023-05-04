@@ -257,6 +257,7 @@ onMounted(() => {
         >
           <a-select-option
             v-for="items of state.studentList"
+            :key="items.id"
             :value="items.id"
             >{{ items.name }}</a-select-option
           >
