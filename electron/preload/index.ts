@@ -1,8 +1,8 @@
 import os from 'os'
 import { contextBridge, ipcRenderer } from 'electron'
 // 此处与业务无关 只是为了打印store数据
-import Store from 'electron-store'
-console.log('当前store', new Store().store)
+// import Store from 'electron-store'
+// console.log('当前store', new Store().store)
 
 const store = {
   // 页面render调用主线程main方法

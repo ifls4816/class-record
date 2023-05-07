@@ -1,8 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'path'
-import fs from 'fs'
 import Store from 'electron-store'
-import dayjs from 'dayjs'
+
 // 主线程初始化electron-store
 const store = new Store()
 // 监听store方法
@@ -17,7 +16,16 @@ ipcMain.on('electron-store-del', async (event, key) => {
 })
 // 备份数据
 ipcMain.on('electron-backup-set', async () => {
-  const filename = `record-${dayjs().format('YYYY-MM-DD HH-mm-ss')}`
+  const fs = await import('fs')
+  const formatDateTime = (date: Date) => {
+    const padZero = (num: number): string => num.toString().padStart(2, '0')
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    return `${year}-${padZero(month)}-${padZero(day)}`
+  }
+
+  const filename = `record-${formatDateTime(new Date())}`
   const filters = [
     {
       name: filename,
@@ -54,11 +62,12 @@ ipcMain.on('electron-backup-get', async (event) => {
       message: '请选择你要导入的json格式文件',
       buttonLabel: '导入',
     })
-    .then((result) => {
+    .then(async (result) => {
       // 点击取消什么也不做
       if (result.canceled) {
         return (event.returnValue = JSON.stringify(result))
       }
+      const fs = await import('fs')
       const data = fs.readFileSync(result.filePaths[0], 'utf-8')
       event.returnValue = data
     })
