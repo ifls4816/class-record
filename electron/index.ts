@@ -116,12 +116,18 @@ app.whenReady().then(() => {
   app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
+    // process.platform === 'darwin' && app.dock.show() // 展示dock图标
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
 
+// app.on('before-quit', () => {
+// app.dock.hide(); // 隐藏 Dock 中的图标
+// });
+
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  // process.platform === 'darwin' && app.dock.hide()
+  // if (process.platform !== 'darwin') {
+  app.quit()
+  // }
 })
