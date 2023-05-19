@@ -118,7 +118,7 @@ const drawBoxLine = () => {
   }
   echart.setOption({
     title: {
-      text: `${state.currentDate.format('YYYY年M月')} (共${
+      text: `${state.currentDate.format('YYYY年M月')}课时统计 (共${
         state.totalTime
       }课时)`,
       left: 'center'
@@ -177,8 +177,8 @@ const drawBoxPie = () => {
   }
   echart.setOption({
     title: {
-      text: '学生课时占比',
-      left: 'center'
+      // text: '学生课时占比',
+      // left: 'center'
     },
     tooltip: {
       trigger: 'item',
@@ -213,6 +213,7 @@ const drawBoxPie = () => {
         },
         type: 'pie',
         radius: '50%',
+        center: ["75%", "50%"],// 控制饼图生成在盒子的哪个位置，[左右,上下]
         data: state.pieData,
         emphasis: {
           itemStyle: {
