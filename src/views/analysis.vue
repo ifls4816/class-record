@@ -79,7 +79,7 @@ const queryLineData = () => {
   const { monthObj } = queryBase(state.currentDate)
   // box2
   // 获取月视图x轴的正月数据[1,2,3,4...]
-  const monthXAxis = getDaysArrayByMonth()
+  const monthXAxis = getDaysArrayByMonth(state.currentDate)
   // 将当月记录转换为[1课时,2课时,0.5课时...]
   let monthValue: number[] = []
   monthXAxis.forEach((values: any) => {

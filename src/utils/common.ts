@@ -2,7 +2,7 @@
  * @Description: 通用函数
  * @Author: IFLS
  * @Date: 2023-03-25 22:12:11
- * @LastEditTime: 2023-05-03 20:33:28
+ * @LastEditTime: 2023-06-02 15:15:35
  */
 import { message as Message } from 'ant-design-vue'
 import dayjs, { Dayjs, UnitType } from 'dayjs'
@@ -87,15 +87,15 @@ export const queryStudentInfo = (studentId: number): Student => {
 }
 
 // 获取当前月每一天数据
-export const getDaysArrayByMonth = () => {
+export const getDaysArrayByMonth = (currentDay: Dayjs) => {
   //获取当前月份包含的天数
-  let daysInMonth = dayjs().daysInMonth()
+  let daysInMonth = currentDay.daysInMonth()
   const arrDays = []
 
   //循环获取月份里的日期
   while (daysInMonth) {
-    var current = dayjs().date(daysInMonth).format('D')
-    arrDays.unshift(current)
+    // const current = dayjs().date(daysInMonth).format('DD')
+    arrDays.unshift(daysInMonth)
     daysInMonth--
   }
   return arrDays
