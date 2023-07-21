@@ -1,9 +1,27 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'path'
 import Store from 'electron-store'
+import os from 'os'
 
+const osEnv = os.type()
+let storePath = ''
+if (osEnv === "Darwin") {
+  // mac存储目录/Users/admin/Library/Mobile Documents/com~apple~CloudDocs/ClassRecordStore
+  storePath = path.join(
+    os.homedir(),
+    'Library',
+    'Mobile Documents',
+    'com~apple~CloudDocs',
+    'ClassRecordStore',
+  )
+} else {
+  // 非mac设备存储目录: /Users/admin/Library/Application Support/electron-desktop
+  storePath = app.getPath('userData')
+}
 // 主线程初始化electron-store
-const store = new Store()
+const store = new Store({
+  cwd: storePath, // 设置数据存储位置为icloud
+})
 // 监听store方法
 ipcMain.on('electron-store-get', async (event, key) => {
   event.returnValue = store.get(key)
@@ -14,6 +32,8 @@ ipcMain.on('electron-store-set', async (event, key, val) => {
 ipcMain.on('electron-store-del', async (event, key) => {
   store.delete(key)
 })
+
+
 // 备份数据
 ipcMain.on('electron-backup-set', async () => {
   const fs = await import('fs')
@@ -75,8 +95,6 @@ ipcMain.on('electron-backup-get', async (event) => {
       console.log('electron-backup-get-err', err)
     })
 })
-
-// console.log(app.getPath('userData')) // /Users/admin/Library/Application Support/electron-desktop
 
 const createWindow = () => {
   const win = new BrowserWindow({
