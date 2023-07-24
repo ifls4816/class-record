@@ -2,7 +2,7 @@
  * @Description: 通用函数
  * @Author: IFLS
  * @Date: 2023-03-25 22:12:11
- * @LastEditTime: 2023-07-24 15:24:38
+ * @LastEditTime: 2023-07-24 16:06:17
  */
 import { message as Message } from 'ant-design-vue'
 import dayjs, { Dayjs, UnitType } from 'dayjs'
@@ -92,8 +92,11 @@ export const queryStudentList = () => {
 }
 
 // 根据id查询学生信息
-export const queryStudentInfo = (studentId: number): Student => {
-  const studentList = db.get('student')
+let studentList = db.get('student')
+export const queryStudentInfo = (studentId: number, reflashList = false): Student => {
+  if (reflashList) {
+    studentList = db.get('student')
+  }
   const idx = studentList.findIndex((items: Student) => items.id === studentId)
   return studentList[idx] || {}
 }
@@ -147,7 +150,7 @@ export const groupingById = (arr: TodayClass[]): SeriesData[] => {
       resultData.push({
         studentId: studentId,
         value: arr[i].timeDiff / 60,
-        name: queryStudentInfo(studentId).name,
+        name: queryStudentInfo(studentId, true).name,
       })
       idArr.push(arr[i].studentId)
     } else {

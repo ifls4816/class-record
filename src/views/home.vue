@@ -212,7 +212,8 @@ const calTodayTime = () => {
     monthList = monthList.flat(Infinity)
   }
   monthList.forEach((val: TodayClass) => {
-    const studentType = queryStudentInfo(val.studentId as number)
+    // 区分查询学生类型 不强制查询本地最新的学生列表
+    const studentType = queryStudentInfo(val.studentId as number, false)
     if (studentType.type === '1') {
       schoolList.push(val)
     } else {
