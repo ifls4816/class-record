@@ -2,7 +2,7 @@
  * @Description: 通用函数
  * @Author: IFLS
  * @Date: 2023-03-25 22:12:11
- * @LastEditTime: 2023-06-02 15:15:35
+ * @LastEditTime: 2023-07-24 15:24:38
  */
 import { message as Message } from 'ant-design-vue'
 import dayjs, { Dayjs, UnitType } from 'dayjs'
@@ -76,6 +76,18 @@ export const queryStudentList = () => {
     const frequency = calTimeTotal(values.frequencyList) / 60
     values.frequency = frequency
   })
+
+  // 根据disabled字段排序 将未禁用的学生靠前
+  studentList.sort((a: Student, b: Student) => {
+    if (a.disabled && !b.disabled) {
+      return 1 // a排在b后面
+    } else if (!a.disabled && b.disabled) {
+      return -1 // a排在b前面
+    } else {
+      return 0 // 保持原来的顺序
+    }
+  })
+
   return studentList
 }
 
@@ -141,7 +153,7 @@ export const groupingById = (arr: TodayClass[]): SeriesData[] => {
     } else {
       for (let j = 0; j < resultData.length; j++) {
         if (resultData[j].studentId === arr[i].studentId) {
-          resultData[j].value += (arr[i].timeDiff / 60)
+          resultData[j].value += arr[i].timeDiff / 60
           break
         }
       }
