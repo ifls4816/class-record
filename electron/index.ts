@@ -1,11 +1,11 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, BrowserWindow, ipcMain, dialog, Menu } from 'electron'
 import path from 'path'
 import Store from 'electron-store'
 import os from 'os'
 
 const osEnv = os.type()
 let storePath = ''
-if (osEnv === "Darwin") {
+if (osEnv === 'Darwin') {
   // mac存储目录/Users/admin/Library/Mobile Documents/com~apple~CloudDocs/ClassRecordStore
   storePath = path.join(
     os.homedir(),
@@ -129,7 +129,10 @@ const createWindow = () => {
 }
 
 app.whenReady().then(() => {
+  // 创建窗口
   createWindow()
+  // 隐藏程序工具栏
+  Menu.setApplicationMenu(null)
 
   app.on('activate', () => {
     // On macOS it's common to re-create a window in the app when the

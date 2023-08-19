@@ -41,7 +41,8 @@ dayjs.locale('zh-cn')
     background: #ececec;
     .card {
       height: 100%;
-      overflow: scroll;
+      // overflow: scroll;
+      overflow: hidden;
     }
   }
 }
