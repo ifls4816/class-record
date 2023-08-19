@@ -1,6 +1,6 @@
 {
-  "name": "electron-desktop",
-  "description": "a electron project",
+  "name": "class-record",
+  "description": "a electron project for recording class hours",
   "author": "ifls",
   "private": true,
   "version": "1.0.0",
