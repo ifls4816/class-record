@@ -1,17 +1,26 @@
 <script lang="ts" setup>
 import { onMounted, reactive, watch } from 'vue'
-import * as echarts from 'echarts'
+import echarts from '../utils/echart'
 import { db } from '../server/db/initDB'
 import dayjs, { Dayjs } from 'dayjs'
 import {
   queryYearMonthDay,
   getDaysArrayByMonth,
-  getDaysArrayByWeek,
   calTimeTotal,
   groupingById,
   sumArr
 } from '../utils/common'
 import { Student, SeriesData, TodayClass } from '../types/type'
+
+const defaultStudent = {
+  id: -999,
+  name: '全部',
+  type: '1',
+  crateTime: '',
+  frequency: -999,
+  frequencyList: [],
+  disabled: false,
+}
 
 const state = reactive({
   currentDate: dayjs(), // 当前时间
@@ -22,7 +31,7 @@ const state = reactive({
   },
   totalTime: 0, // 课时总计
   studentId: -999, // 学生id
-  studentList: [] as Student[] // 学生列表
+  studentList: [defaultStudent] as Student[] // 学生列表
 })
 
 // watch日期变化
@@ -60,18 +69,15 @@ const queryStudentList = () => {
     }
     return total
   }, [])
-  const allStudent: Student = {
-    id: -999,
-    name: '全部',
-    type: '1',
-    crateTime: '',
-    frequency: -999,
-    frequencyList: [],
-    disabled: false
-  }
-  studentList.unshift(allStudent)
+  studentList.unshift(defaultStudent)
   console.log('当前学生列表', studentList)
   state.studentList = studentList
+}
+
+const selectOnClick = () => {
+  if(state.studentList.length === 1) {
+    queryStudentList()
+  }
 }
 
 // 查询折线图数据
@@ -235,7 +241,7 @@ const init = () => {
 }
 
 onMounted(() => {
-  queryStudentList()
+  // queryStudentList()
   init()
 })
 </script>
@@ -255,6 +261,7 @@ onMounted(() => {
           placeholder="选择学生"
           ref="select"
           v-model:value="state.studentId"
+          @click="selectOnClick"
         >
           <a-select-option
             v-for="items of state.studentList"
