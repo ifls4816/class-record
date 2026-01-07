@@ -8,6 +8,7 @@ import {
 import { Modal, message as Message } from 'ant-design-vue'
 import { db } from '../server/db/initDB'
 import { successMsg } from '../utils/common'
+import { reloadDataStore } from '../store/dataStore'
 
 const electronBackup = window.electronAPI.backup
 
@@ -28,9 +29,12 @@ const restore = () => {
         okType: 'danger',
         cancelText: '取消',
         onOk () {
-          // deleteClass(index)
           db.set('student', store.student)
           db.set('class', store.class)
+          // 清除 preload 层缓存
+          electronBackup.clearCache()
+          // 刷新内存缓存
+          reloadDataStore()
           successMsg()
         }
       })

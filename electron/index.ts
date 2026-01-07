@@ -26,6 +26,10 @@ const store = new Store({
 ipcMain.on('electron-store-get', async (event, key) => {
   event.returnValue = store.get(key)
 })
+// 一次性获取所有数据，减少 IPC 调用次数
+ipcMain.on('electron-store-get-all', async (event) => {
+  event.returnValue = store.store
+})
 ipcMain.on('electron-store-set', async (event, key, val) => {
   store.set(key, val)
 })

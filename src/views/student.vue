@@ -4,9 +4,18 @@ import { Type, Student } from '../types/type'
 import { columns } from '../utils/data'
 import { ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import { Modal } from 'ant-design-vue'
-import { db } from '../server/db/initDB'
 import dayjs from 'dayjs'
-import { successMsg, queryStudentList } from '../utils/common'
+import { successMsg } from '../utils/common'
+import {
+  getStudentList,
+  addStudent as addStudentToStore,
+  updateStudent,
+  deleteStudent as deleteStudentFromStore,
+  getNextStudentId,
+  getClassData
+} from '../store/dataStore'
+import { TodayClass } from '../types/type'
+import { calTimeTotal } from '../utils/common'
 
 const state = reactive({
   dataSource: [] as Student[],
@@ -23,9 +32,44 @@ const state = reactive({
   } as Student
 })
 
-// 查询学生列表
+// 查询学生列表（带课时统计）
 const queryList = () => {
-  const studentList = queryStudentList()
+  const studentList = getStudentList()
+  const allClassObj = getClassData()
+  
+  // 扁平化课程数据
+  let dayList: TodayClass[] = []
+  for (let yearKey in allClassObj) {
+    const yearObj = allClassObj[yearKey]
+    for (let monthKey in yearObj) {
+      const monthObj = yearObj[monthKey]
+      for (let dayKey in monthObj) {
+        dayList.push(...monthObj[dayKey])
+      }
+    }
+  }
+  
+  // 按学生ID分组
+  const classMap = new Map<number, TodayClass[]>()
+  dayList.forEach(val => {
+    const id = val.studentId as number
+    if (!classMap.has(id)) classMap.set(id, [])
+    classMap.get(id)!.push(toRaw(val))
+  })
+  
+  // 计算每个学生的课时
+  studentList.forEach(s => {
+    s.frequencyList = classMap.get(s.id) || []
+    s.frequency = calTimeTotal(s.frequencyList) / 60
+  })
+  
+  // 排序：未禁用的靠前
+  studentList.sort((a, b) => {
+    if (a.disabled && !b.disabled) return 1
+    if (!a.disabled && b.disabled) return -1
+    return 0
+  })
+  
   state.dataSource = studentList
   console.log('当前学生列表', studentList)
 }
@@ -36,7 +80,7 @@ const onSearch = () => {
   if (name === '') {
     return queryList()
   }
-  const studentList = db.get('student')
+  const studentList = getStudentList()
   let targetArr: Student[] = []
   studentList.forEach((items: Student) => {
     if (items.name.includes(name)) {
@@ -61,11 +105,9 @@ const showAddModal = (type: Type, record: Student) => {
 
 // 添加数据
 const addStudentList = (val: Student) => {
-  const studentList = db.get('student')
-  const lastItem = studentList[studentList.length - 1]
-  const crateTime = dayjs().format('YYYY-MM-DD') // 创建时间
-  const id = lastItem ? lastItem.id + 1 : 1 // id
-  const items = {
+  const crateTime = dayjs().format('YYYY-MM-DD')
+  const id = getNextStudentId()
+  const items: Student = {
     ...val,
     id,
     crateTime,
@@ -73,30 +115,18 @@ const addStudentList = (val: Student) => {
     frequency: 0,
     frequencyList: []
   }
-  studentList.push(items)
-  db.set('student', studentList)
+  addStudentToStore(items)
 }
 
 // 编辑数据
 const editStudentList = (val: Student) => {
-  const studentList = db.get('student')
-  const newList = studentList.map((items: Student) => {
-    if (items.id === val.id) {
-      // db不能存储响应式数据 要转换回未经过proxy代理的正常对象
-      val.frequencyList = toRaw(val.frequencyList)
-      items = toRaw(val)
-    }
-    return items
-  })
-  db.set('student', newList)
+  val.frequencyList = toRaw(val.frequencyList)
+  updateStudent(toRaw(val))
 }
 
 // 删除数据
 const deleteStudentList = (val: Student) => {
-  const studentList = db.get('student')
-  const idx = studentList.findIndex((items: Student) => items.id === val.id)
-  studentList.splice(idx, 1)
-  db.set('student', studentList)
+  deleteStudentFromStore(val.id)
 }
 
 const onSubmit = () => {

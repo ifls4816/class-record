@@ -48,11 +48,19 @@ export const calDiffTime = (
   return dayjs(startTime).diff(endTime, type)
 }
 
-// 查询学生列表
-export const queryStudentList = () => {
-  const studentList = db.get('student')
+// 缓存扁平化后的课程数据
+let flatClassListCache: TodayClass[] | null = null
+let classObjVersion = 0
+
+// 获取扁平化的课程列表（带缓存）
+const getFlatClassList = (): TodayClass[] => {
   const allClassObj = db.get('class')
-  // 将年度数据转换为扁平的课时数据
+  // 简单的版本检测，如果数据变化则重新计算
+  const currentVersion = JSON.stringify(allClassObj).length
+  if (flatClassListCache && classObjVersion === currentVersion) {
+    return flatClassListCache
+  }
+  
   let dayList: TodayClass[] = []
   for (let yearKey in allClassObj) {
     const yearObj = allClassObj[yearKey]
@@ -60,21 +68,41 @@ export const queryStudentList = () => {
       const monthObj = yearObj[monthKey]
       for (let dayKey in monthObj) {
         const dayObj = monthObj[dayKey]
-        dayList.push(dayObj)
-        dayList = dayList.flat(Infinity)
+        dayList.push(...dayObj)
       }
     }
   }
-  // 遍历学生列表和课程列表 将课程列表挂载到对应学生名下
+  
+  flatClassListCache = dayList
+  classObjVersion = currentVersion
+  return dayList
+}
+
+// 清除课程缓存（数据变更时调用）
+export const clearClassCache = () => {
+  flatClassListCache = null
+  classObjVersion = 0
+}
+
+// 查询学生列表
+export const queryStudentList = () => {
+  const studentList = db.get('student')
+  const dayList = getFlatClassList()
+  
+  // 预先按学生ID分组课程，避免重复遍历
+  const classMap = new Map<number, TodayClass[]>()
+  dayList.forEach((val: TodayClass) => {
+    const id = val.studentId as number
+    if (!classMap.has(id)) {
+      classMap.set(id, [])
+    }
+    classMap.get(id)!.push(toRaw(val))
+  })
+  
+  // 遍历学生列表，从 Map 中获取对应课程
   studentList.forEach((values: Student) => {
-    values.frequencyList = []
-    dayList.forEach((val: TodayClass) => {
-      if (values.id === val.studentId) {
-        values.frequencyList.push(toRaw(val))
-      }
-    })
-    const frequency = calTimeTotal(values.frequencyList) / 60
-    values.frequency = frequency
+    values.frequencyList = classMap.get(values.id) || []
+    values.frequency = calTimeTotal(values.frequencyList) / 60
   })
 
   // 根据disabled字段排序 将未禁用的学生靠前
@@ -91,14 +119,22 @@ export const queryStudentList = () => {
   return studentList
 }
 
-// 根据id查询学生信息
-let studentList = db.get('student')
-export const queryStudentInfo = (studentId: number, reflashList = false): Student => {
-  if (reflashList) {
-    studentList = db.get('student')
+// 学生信息缓存 Map
+let studentMapCache: Map<number, Student> | null = null
+
+// 根据id查询学生信息（优化版）
+export const queryStudentInfo = (studentId: number, refreshList = false): Student => {
+  if (!studentMapCache || refreshList) {
+    const studentList = db.get('student')
+    studentMapCache = new Map()
+    studentList.forEach((s: Student) => studentMapCache!.set(s.id, s))
   }
-  const idx = studentList.findIndex((items: Student) => items.id === studentId)
-  return studentList[idx] || {}
+  return studentMapCache.get(studentId) || {} as Student
+}
+
+// 清除学生缓存（数据变更时调用）
+export const clearStudentCache = () => {
+  studentMapCache = null
 }
 
 // 获取当前月每一天数据
@@ -139,28 +175,25 @@ export const sumArr = (arr: number[]): number => {
   }, 0)
 }
 
-// 根据学生id分组学生课时数据
+// 根据学生id分组学生课时数据（优化版，避免重复刷新缓存）
 export const groupingById = (arr: TodayClass[]): SeriesData[] => {
-  const idArr: any = []
-  const resultData: SeriesData[] = []
+  // 先刷新一次学生缓存
+  queryStudentInfo(-1, true)
+  
+  const resultMap = new Map<number, SeriesData>()
 
-  for (let i = 0; i < arr.length; i++) {
-    if (idArr.indexOf(arr[i].studentId) === -1) {
-      const studentId = arr[i].studentId as number
-      resultData.push({
-        studentId: studentId,
-        value: arr[i].timeDiff / 60,
-        name: queryStudentInfo(studentId, true).name,
-      })
-      idArr.push(arr[i].studentId)
+  for (const item of arr) {
+    const studentId = item.studentId as number
+    if (resultMap.has(studentId)) {
+      resultMap.get(studentId)!.value += item.timeDiff / 60
     } else {
-      for (let j = 0; j < resultData.length; j++) {
-        if (resultData[j].studentId === arr[i].studentId) {
-          resultData[j].value += arr[i].timeDiff / 60
-          break
-        }
-      }
+      resultMap.set(studentId, {
+        studentId,
+        value: item.timeDiff / 60,
+        name: queryStudentInfo(studentId, false).name, // 不再每次刷新
+      })
     }
   }
-  return resultData
+  
+  return Array.from(resultMap.values())
 }

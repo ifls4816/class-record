@@ -3,6 +3,7 @@ import { ElectronStore } from 'electron-store'
 interface Backup {
   get: () => {}
   set: () => {}
+  clearCache: () => void
 }
 
 export interface IElectronAPI {

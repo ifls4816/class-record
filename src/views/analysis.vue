@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { onMounted, reactive, watch } from 'vue'
 import echarts from '../utils/echart'
-import { db } from '../server/db/initDB'
 import dayjs, { Dayjs } from 'dayjs'
 import {
   queryYearMonthDay,
@@ -11,11 +10,14 @@ import {
   sumArr
 } from '../utils/common'
 import { Student, SeriesData, TodayClass } from '../types/type'
+import { getActiveStudentList, getClassData } from '../store/dataStore'
 
-const defaultStudent = {
+import { Type } from '../types/type'
+
+const defaultStudent: Student = {
   id: -999,
   name: '全部',
-  type: '1',
+  type: '1' as Type,
   crateTime: '',
   frequency: -999,
   frequencyList: [],
@@ -44,7 +46,7 @@ watch(
 
 // 查询基本日期函数
 const queryBase = (currentDay: string | Dayjs) => {
-  const classObj = db.get('class')
+  const classObj = getClassData()
   // const [year, month] = queryYearMonthDay(dayjs())
   const [year, month] = queryYearMonthDay(currentDay)
   // 获取当月记录
@@ -61,14 +63,7 @@ const queryBase = (currentDay: string | Dayjs) => {
 
 // 查询学生列表
 const queryStudentList = () => {
-  let studentList = db.get('student')
-  // 过滤禁用状态学生列表
-  studentList = studentList.reduce((total: Student[], currentVal: Student) => {
-    if (!currentVal.disabled) {
-      total.push(currentVal)
-    }
-    return total
-  }, [])
+  const studentList = getActiveStudentList()
   studentList.unshift(defaultStudent)
   console.log('当前学生列表', studentList)
   state.studentList = studentList

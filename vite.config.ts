@@ -4,12 +4,22 @@ import vue from '@vitejs/plugin-vue'
 import electron from 'vite-plugin-electron'
 import { resolve } from 'path'
 import pkg from './package.json'
+import Components from 'unplugin-vue-components/vite'
+import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers'
 
 rmSync('dist', { recursive: true, force: true })
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
+    // Ant Design Vue 按需导入
+    Components({
+      resolvers: [
+        AntDesignVueResolver({
+          importStyle: 'less', // 使用 less 样式
+        }),
+      ],
+    }),
     electron([
       {
         entry: 'electron/index.ts',
@@ -35,6 +45,35 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'), // 设置 `@` 指向 `src` 目录
       '@img': resolve(__dirname, 'src/assets/images'), // 设置@img指向images目录
+    },
+  },
+  build: {
+    // 压缩优化
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,  // 移除 console
+        drop_debugger: true, // 移除 debugger
+      },
+    },
+    // 分包优化
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'ant-design-vue': ['ant-design-vue'],
+          'echarts': ['echarts/core', 'echarts/renderers', 'echarts/charts', 'echarts/components'],
+          'vue-vendor': ['vue', 'vue-router'],
+        }
+      }
+    },
+    // 启用 gzip 压缩阈值
+    chunkSizeWarningLimit: 1000,
+  },
+  css: {
+    preprocessorOptions: {
+      less: {
+        javascriptEnabled: true,
+      },
     },
   },
   server: process.env.VSCODE_DEBUG

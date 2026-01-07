@@ -3,15 +3,19 @@ import { reactive, onMounted, toRaw, createVNode } from 'vue'
 import { Student, TodayClass } from '../types/type'
 import { PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons-vue'
 import dayjs, { Dayjs } from 'dayjs'
-import { db } from '../server/db/initDB'
 import { Modal } from 'ant-design-vue'
 import {
   successMsg,
   calTimeTotal,
   queryYearMonthDay,
-  calDiffTime,
-  queryStudentInfo
+  calDiffTime
 } from '../utils/common'
+import {
+  getActiveStudentList,
+  getClassData,
+  setClassData,
+  getStudentById
+} from '../store/dataStore'
 
 const state = reactive({
   value: '', // 日历value
@@ -34,21 +38,14 @@ const state = reactive({
 
 // 查询学生列表
 const queryStudentList = () => {
-  let studentList = db.get('student')
-  // 过滤禁用状态学生列表
-  studentList = studentList.reduce((total: Student[], currentVal: Student) => {
-    if (!currentVal.disabled) {
-      total.push(currentVal)
-    }
-    return total
-  }, [])
+  const studentList = getActiveStudentList()
   console.log('当前学生列表', studentList)
   state.studentList = studentList
 }
 
 // 查询课程列表
 const queryClassList = () => {
-  const classObj = db.get('class')
+  const classObj = getClassData()
   state.classList = classObj
   console.log('课程列表', state.classList)
 }
@@ -112,7 +109,7 @@ const queryDrawerCurrentList = (current: Dayjs) => {
 // 提交课程表单
 const onSubmitClassForm = () => {
   const [year, month, day, value] = queryYearMonthDay(state.drawerTitle)
-  const classObj = db.get('class')
+  const classObj = getClassData()
   classObj[year] = classObj[year] || {}
   classObj[year][month] = classObj[year][month] || {}
   classObj[year][month][day] = classObj[year][month][day] || []
@@ -132,7 +129,7 @@ const onSubmitClassForm = () => {
   })
   classObj[year][month][day] = arr
   // 保存数据
-  db.set('class', classObj)
+  setClassData(classObj)
   // 查询日历整体课程列表
   queryClassList()
   // 更新当前抽屉下列表数据
@@ -162,11 +159,11 @@ const onDelete = (index: number) => {
 // 根据索引删除课程
 const deleteClass = (index: number) => {
   const [year, month, day, value] = queryYearMonthDay(state.drawerTitle)
-  const classObj = db.get('class')
+  const classObj = getClassData()
   const dayList = classObj[year][month][day]
   dayList.splice(index, 1)
   classObj[year][month][day] = dayList
-  db.set('class', classObj)
+  setClassData(classObj)
   queryClassList()
   queryDrawerCurrentList(value)
   calTodayTime()
@@ -212,9 +209,9 @@ const calTodayTime = () => {
     monthList = monthList.flat(Infinity)
   }
   monthList.forEach((val: TodayClass) => {
-    // 区分查询学生类型 不强制查询本地最新的学生列表
-    const studentType = queryStudentInfo(val.studentId as number, false)
-    if (studentType.type === '1') {
+    // 区分查询学生类型
+    const studentInfo = getStudentById(val.studentId as number)
+    if (studentInfo?.type === '1') {
       schoolList.push(val)
     } else {
       outList.push(val)
@@ -258,12 +255,12 @@ onMounted(() => {
                         closable
                         @close.prevent="onDelete(index)"
                         :color="
-                          queryStudentInfo(item.studentId).type === '1'
+                          getStudentById(item.studentId)?.type === '1'
                             ? 'green'
                             : 'geekblue'
                         "
                       >
-                        {{ queryStudentInfo(item.studentId).name }}
+                        {{ getStudentById(item.studentId)?.name }}
                       </a-tag>
                     </span>
                   </div>
