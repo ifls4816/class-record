@@ -48,14 +48,8 @@ export default defineConfig({
     },
   },
   build: {
-    // 压缩优化
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,  // 移除 console
-        drop_debugger: true, // 移除 debugger
-      },
-    },
+    // 使用 esbuild 压缩（默认）
+    minify: 'esbuild',
     // 分包优化
     rollupOptions: {
       output: {
@@ -66,7 +60,6 @@ export default defineConfig({
         }
       }
     },
-    // 启用 gzip 压缩阈值
     chunkSizeWarningLimit: 1000,
   },
   css: {
