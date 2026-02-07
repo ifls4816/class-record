@@ -63,11 +63,11 @@ const queryList = () => {
     s.frequency = calTimeTotal(s.frequencyList) / 60
   })
   
-  // 排序：未禁用的靠前
+  // 排序：未禁用的靠前 大id号靠前
   studentList.sort((a, b) => {
     if (a.disabled && !b.disabled) return 1
     if (!a.disabled && b.disabled) return -1
-    return 0
+    return b.id - a.id;
   })
   
   state.dataSource = studentList

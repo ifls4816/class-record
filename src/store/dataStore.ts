@@ -105,7 +105,8 @@ export const reloadDataStore = () => {
 
 // 获取下一个学生ID
 export const getNextStudentId = (): number => {
-  const list = getStudentList()
+  // 学生列表返回无序时 最后一个学生id可能不是最大id 导致id异常 排序后修复
+  const list = getStudentList().sort((a, b) => a.id - b.id);
   if (list.length === 0) return 1
   return list[list.length - 1].id + 1
 }
