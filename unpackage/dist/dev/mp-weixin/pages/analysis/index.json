@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "统计",
+  "navigationBarBackgroundColor": "#ff9a9e",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "popup-modal": "../../components/popup-modal"
+  }
+}

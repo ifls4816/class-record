@@ -1,0 +1,9 @@
+{
+  "defaultTitle": "学生",
+  "navigationBarFrontColor": "white",
+  "titleBarColor": "#ff9a9e",
+  "usingComponents": {
+    "drag-float-btn": "../../components/drag-float-btn",
+    "popup-modal": "../../components/popup-modal"
+  }
+}

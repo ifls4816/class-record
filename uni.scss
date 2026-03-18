@@ -1,0 +1,72 @@
+/* uni.scss - 全局主题配置 */
+
+/* 主题色 - 粉色系 */
+$primary-color: #ff7b8a;
+$primary-light: #ff9aa2;
+$primary-dark: #ff6b7a;
+
+/* 辅助色 - 紫色系 */
+$secondary-color: #a855f7;
+$secondary-light: #e9d5ff;
+
+/* 功能色 */
+$success-color: #10b981;
+$success-light: #d1fae5;
+
+$warning-color: #f59e0b;
+$warning-light: #fef3c7;
+
+$error-color: #ef4444;
+$error-light: #fee2e2;
+
+$info-color: #3b82f6;
+$info-light: #dbeafe;
+
+/* 中性色 */
+$text-primary: #1f2937;
+$text-secondary: #6b7280;
+$text-placeholder: #9ca3af;
+$text-disabled: #d1d5db;
+
+$bg-primary: #fef1f2;
+$bg-secondary: #fdf2f8;
+$bg-tertiary: #f5f3ff;
+
+$border-color: #fce7f3;
+$border-light: #f3e8ff;
+
+/* 阴影 */
+$shadow-sm: 0 2rpx 8rpx rgba(255, 182, 193, 0.1);
+$shadow-md: 0 4rpx 16rpx rgba(255, 182, 193, 0.15);
+$shadow-lg: 0 8rpx 24rpx rgba(255, 182, 193, 0.2);
+$shadow-xl: 0 12rpx 32rpx rgba(255, 182, 193, 0.25);
+
+/* 圆角 */
+$radius-sm: 12rpx;
+$radius-md: 16rpx;
+$radius-lg: 20rpx;
+$radius-xl: 24rpx;
+$radius-full: 50rpx;
+
+/* 字号 */
+$font-xs: 22rpx;
+$font-sm: 24rpx;
+$font-base: 28rpx;
+$font-lg: 32rpx;
+$font-xl: 36rpx;
+$font-2xl: 40rpx;
+$font-3xl: 48rpx;
+
+/* 间距 */
+$spacing-xs: 8rpx;
+$spacing-sm: 16rpx;
+$spacing-base: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 40rpx;
+
+/* 渐变色 */
+$gradient-primary: linear-gradient(135deg, #ff7b8a 0%, #ff9aa2 100%);
+$gradient-secondary: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+$gradient-purple: linear-gradient(135deg, #c084fc 0%, #f0abfc 100%);
+$gradient-mint: linear-gradient(135deg, #6ee7b7 0%, #a7f3d0 100%);
+$gradient-sky: linear-gradient(135deg, #93c5fd 0%, #bfdbfe 100%);

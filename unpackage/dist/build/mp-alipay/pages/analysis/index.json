@@ -1,0 +1,8 @@
+{
+  "defaultTitle": "统计",
+  "navigationBarFrontColor": "white",
+  "titleBarColor": "#ff9a9e",
+  "usingComponents": {
+    "popup-modal": "../../components/popup-modal"
+  }
+}

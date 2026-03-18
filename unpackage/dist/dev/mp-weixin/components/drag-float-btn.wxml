@@ -1,0 +1,1 @@
+<view class="drag-float-btn data-v-c56e2f7e" style="{{a}}" bindtouchstart="{{b}}" bindtouchmove="{{c}}" bindtouchend="{{d}}" bindtap="{{e}}"><text class="add-icon data-v-c56e2f7e">+</text></view>
