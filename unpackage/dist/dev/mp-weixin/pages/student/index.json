@@ -1,9 +1,0 @@
-{
-  "navigationBarTitleText": "学生",
-  "navigationBarBackgroundColor": "#ff9a9e",
-  "navigationBarTextStyle": "white",
-  "usingComponents": {
-    "drag-float-btn": "../../components/drag-float-btn",
-    "popup-modal": "../../components/popup-modal"
-  }
-}
