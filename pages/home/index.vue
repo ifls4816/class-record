@@ -48,12 +48,11 @@
     <view v-if="todayRecords.length > 0" class="record-list">
       <view 
         class="record-item fade-in" 
-        :class="{ 'future-record': record.isFuture }"
         v-for="(record, index) in todayRecords" 
         :key="`${record.studentId}-${record.time[0]}-${index}`"
         @longpress="showActionSheet(record, index)"
       >
-        <view class="record-left">
+        <view class="record-left" :class="{ 'future-record': record.isFuture }">
           <view class="record-time">
             <image class="time-icon" src="/static/icon/time.png" mode="aspectFit" />
             <text class="time-text">{{ record.time[0] }} - {{ record.time[1] }}</text>
@@ -65,7 +64,10 @@
           </view>
         </view>
         <view class="record-right">
-          <text class="duration-tag">{{ record.timeDiff }}分钟</text>
+          <view v-if="record.isFuture" class="attend-btn" @click.stop="markAsAttended(record, index)">
+            <text class="attend-btn-text">确认上课</text>
+          </view>
+          <text v-else class="duration-tag">{{ record.timeDiff }}分钟</text>
         </view>
       </view>
     </view>
@@ -821,6 +823,23 @@ const deleteRecord = (record: TodayClass, index: number) => {
   padding: 4rpx 12rpx;
   border-radius: 12rpx;
   margin-left: 8rpx;
+}
+
+/* 已上课按钮 */
+.attend-btn {
+  background: linear-gradient(135deg, #ff7b8a 0%, #ff9aa2 100%);
+  padding: 10rpx 24rpx;
+  border-radius: 20rpx;
+}
+
+.attend-btn:active {
+  opacity: 0.75;
+}
+
+.attend-btn-text {
+  font-size: 24rpx;
+  color: #fff;
+  font-weight: 600;
 }
 
 .duration-preview {
