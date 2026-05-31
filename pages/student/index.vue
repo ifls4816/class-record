@@ -1,5 +1,5 @@
 <template>
-  <view class="page-wrapper" :class="{ 'no-scroll': showPopup }" @touchmove="handlePageTouchMove">
+  <view class="page-wrapper" :class="{ 'no-scroll': showPopup }">
     <view class="container">
     <!-- 搜索栏 -->
     <view class="search-bar" v-if="sortedStudents.length > 0">
@@ -10,7 +10,6 @@
           v-model="searchKeyword"
           placeholder="搜索学生姓名"
           placeholder-class="input-placeholder"
-          @input="onSearchInput"
         />
         <text class="clear-icon" v-if="searchKeyword" @click="clearSearch">×</text>
       </view>
@@ -175,11 +174,6 @@ const disabledStudents = computed(() => {
   return filteredStudents.value.filter(student => student.disabled)
 })
 
-// 搜索输入
-const onSearchInput = () => {
-  // 搜索逻辑已通过 computed 自动处理
-}
-
 // 清除搜索
 const clearSearch = () => {
   searchKeyword.value = ''
@@ -208,13 +202,6 @@ const closePopup = () => {
   studentForm.value = {
     name: '',
     disabled: false
-  }
-}
-
-// 处理页面触摸移动（弹窗打开时阻止）
-const handlePageTouchMove = (e: TouchEvent) => {
-  if (showPopup.value) {
-    e.preventDefault()
   }
 }
 

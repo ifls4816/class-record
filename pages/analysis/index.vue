@@ -1,5 +1,5 @@
 <template>
-  <view class="page-wrapper" :class="{ 'no-scroll': showDetailPopup }" @touchmove="handlePageTouchMove">
+  <view class="page-wrapper" :class="{ 'no-scroll': showDetailPopup }">
     <view class="container">
     <!-- 时间导航与总课时 -->
     <view class="header-card fade-in">
@@ -329,13 +329,6 @@ const showStudentDetail = (item: RankingItem) => {
 // 关闭学生详情弹窗
 const closeDetailPopup = () => {
   showDetailPopup.value = false
-}
-
-// 处理页面触摸移动（弹窗打开时阻止）
-const handlePageTouchMove = (e: TouchEvent) => {
-  if (showDetailPopup.value) {
-    e.preventDefault()
-  }
 }
 </script>
 

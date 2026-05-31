@@ -1,5 +1,5 @@
 <template>
-  <view class="page-wrapper" :class="{ 'no-scroll': showPopup }" @touchmove="handlePageTouchMove">
+  <view class="page-wrapper" :class="{ 'no-scroll': showPopup }">
     <view class="container">
     <!-- 日历卡片 -->
     <view class="card calendar-card">
@@ -277,11 +277,6 @@ const getRecordsOnDate = (dateStr: string) => {
   return classData.value[year]?.[month]?.[day] || []
 }
 
-// 判断某天是否有课程
-const hasRecordOnDate = (dateStr: string): boolean => {
-  return getRecordsOnDate(dateStr).length > 0
-}
-
 // 选择日期
 const selectDate = (day: CalendarDay) => {
   if (day.date) {
@@ -374,13 +369,6 @@ const showAddPopup = () => {
 const closePopup = () => {
   showPopup.value = false
   resetForm()
-}
-
-// 处理页面触摸移动（弹窗打开时阻止）
-const handlePageTouchMove = (e: TouchEvent) => {
-  if (showPopup.value) {
-    e.preventDefault()
-  }
 }
 
 // 重置表单

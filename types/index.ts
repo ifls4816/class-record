@@ -35,6 +35,7 @@ export interface StorageData {
   students: Student[]
   classData: ClassData
   syncTime?: string
+  backupTime?: string
   version?: string
 }
 
