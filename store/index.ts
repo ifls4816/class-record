@@ -60,8 +60,7 @@ export const useAppStore = defineStore('app', () => {
 
   const nextStudentId = computed(() => {
     if (students.value.length === 0) return 1
-    const sorted = [...students.value].sort((a, b) => a.id - b.id)
-    return sorted[sorted.length - 1].id + 1
+    return students.value.reduce((max, s) => Math.max(max, s.id), 0) + 1
   })
 
   // Actions
@@ -323,6 +322,7 @@ export const useAppStore = defineStore('app', () => {
     restoreData,
     getClassByDate,
     getClassByMonth,
+    getStudentStats,
     getStudentRecords,
     getStudentHours,
     createNewStudent,

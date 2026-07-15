@@ -139,16 +139,21 @@ const isEdit = ref(false)
 const editingStudentId = ref<number | null>(null)
 const currentStudent = ref<Student | null>(null)
 
-// 编辑学生的课时统计（计算属性，仅在编辑时计算）
-const editingStudentHours = computed(() => {
-  if (!isEdit.value || editingStudentId.value === null) return '0.0'
-  return store.getStudentHours(editingStudentId.value).toFixed(1)
+// 编辑学生的课时统计（仅遍历一次 classData，课时与课节数共用）
+const editingStudentStats = computed(() => {
+  if (!isEdit.value || editingStudentId.value === null) {
+    return { records: [], totalMinutes: 0 }
+  }
+  return store.getStudentStats(editingStudentId.value)
 })
 
-const editingStudentRecordCount = computed(() => {
-  if (!isEdit.value || editingStudentId.value === null) return 0
-  return store.getStudentRecords(editingStudentId.value).length
-})
+const editingStudentHours = computed(() =>
+  (editingStudentStats.value.totalMinutes / 60).toFixed(1)
+)
+
+const editingStudentRecordCount = computed(() =>
+  editingStudentStats.value.records.length
+)
 
 // 搜索关键词
 const searchKeyword = ref('')
