@@ -24,6 +24,31 @@
       </view>
     </view>
 
+    <!-- 课时趋势图 -->
+    <view class="trend-card fade-in" v-if="hasTrendData">
+      <view class="trend-header">
+        <text class="trend-title">课时趋势</text>
+        <text class="trend-export" @click="exportImage">导出</text>
+      </view>
+      <view class="trend-chart">
+        <view
+          class="trend-bar-item"
+          v-for="item in monthlyTrend"
+          :key="item.month"
+          @click="selectTrendMonth(item.month)"
+        >
+          <view class="trend-bar-wrap">
+            <view
+              class="trend-bar"
+              :class="{ active: viewMode === 'month' && item.month === selectedMonth }"
+              :style="{ height: item.percent + '%' }"
+            ></view>
+          </view>
+          <text class="trend-month">{{ item.month }}</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 课时统计 -->
     <view class="ranking-section">
       <view v-if="groupedRankingList.length > 0">
@@ -70,6 +95,9 @@
         <text class="empty-text">暂无课时记录</text>
       </view>
     </popup-modal>
+
+    <!-- 导出小结图片（离屏画布组件） -->
+    <export-summary-canvas ref="summaryRef" />
     </view>
   </view>
 </template>
@@ -78,6 +106,7 @@
 import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 import PopupModal from '@/components/popup-modal.vue'
+import ExportSummaryCanvas from '@/components/export-summary-canvas.vue'
 import { useAppStore } from '@/store'
 import { storeToRefs } from 'pinia'
 import type { TodayClass } from '@/types'
@@ -330,11 +359,136 @@ const showStudentDetail = (item: RankingItem) => {
 const closeDetailPopup = () => {
   showDetailPopup.value = false
 }
+
+// ============ 课时趋势图（所选年份的 12 个月）============
+interface TrendItem {
+  month: number
+  hours: string
+  percent: number
+}
+
+const monthlyTrend = computed<TrendItem[]>(() => {
+  const yearData = classData.value[selectedYear.value] || {}
+  const minutesByMonth: number[] = []
+  let maxMinutes = 0
+
+  for (let m = 1; m <= 12; m++) {
+    let minutes = 0
+    const monthData = yearData[m]
+    if (monthData) {
+      Object.values(monthData).forEach(dayRecords => {
+        (dayRecords as TodayClass[]).forEach(r => {
+          if (!r.isFuture) minutes += r.timeDiff || 0
+        })
+      })
+    }
+    minutesByMonth.push(minutes)
+    if (minutes > maxMinutes) maxMinutes = minutes
+  }
+
+  return minutesByMonth.map((minutes, i) => ({
+    month: i + 1,
+    hours: (minutes / 60).toFixed(1),
+    percent: maxMinutes > 0 ? Math.round((minutes / maxMinutes) * 100) : 0
+  }))
+})
+
+const hasTrendData = computed(() => monthlyTrend.value.some(m => m.percent > 0))
+
+// 点击柱状图跳转到对应月份
+const selectTrendMonth = (month: number) => {
+  viewMode.value = 'month'
+  selectedMonth.value = month
+}
+
+// ============ 导出本期小结为图片 ============
+const summaryRef = ref<{ exportImage: (data: any) => void } | null>(null)
+
+const exportImage = () => {
+  summaryRef.value?.exportImage({
+    periodText: displayText.value,
+    totalHours: totalHours.value,
+    groups: groupedRankingList.value
+  })
+}
 </script>
 
 <style scoped>
 .container {
   padding-bottom: 40rpx;
+}
+
+/* 课时趋势图 */
+.trend-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx 24rpx 16rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.12);
+}
+
+.trend-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.trend-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #ff6b7a;
+}
+
+.trend-export {
+  font-size: 24rpx;
+  color: #1f2937;
+  font-weight: 600;
+  padding: 4rpx 0;
+}
+
+.trend-export:active {
+  opacity: 0.6;
+}
+
+.trend-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200rpx;
+}
+
+.trend-bar-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.trend-bar-wrap {
+  width: 100%;
+  height: 160rpx;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.trend-bar {
+  width: 55%;
+  min-height: 4rpx;
+  border-radius: 8rpx 8rpx 0 0;
+  background: linear-gradient(180deg, #ffb3bd 0%, #ff9aa2 100%);
+  transition: height 0.3s ease;
+}
+
+.trend-bar.active {
+  background: linear-gradient(180deg, #ff7b8a 0%, #ff6b7a 100%);
+}
+
+.trend-month {
+  font-size: 20rpx;
+  color: #9ca3af;
 }
 
 /* 头部卡片 */

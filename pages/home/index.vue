@@ -140,14 +140,25 @@
         
         <!-- 未来课时开关 -->
         <view class="future-switch">
-          <switch 
-            :checked="recordForm.isFuture" 
+          <switch
+            :checked="recordForm.isFuture"
             @change="onFutureChange"
             color="#ff7b8a"
             style="transform: scale(0.7);"
           />
           <text class="future-label">未上课</text>
         </view>
+      </view>
+
+      <!-- 重复排课（仅新增时可用） -->
+      <view class="form-item" v-if="!isEdit">
+        <text class="form-label">重复排课</text>
+        <picker mode="selector" :range="repeatOptions" :value="recordForm.repeatWeeks - 1" @change="onRepeatChange">
+          <view class="picker-value">
+            {{ repeatOptions[recordForm.repeatWeeks - 1] }}
+            <text class="picker-arrow">›</text>
+          </view>
+        </picker>
       </view>
     </popup-modal>
     </view>
@@ -192,8 +203,12 @@ const recordForm = ref({
   date: dayjs().format('YYYY-MM-DD'),
   startTime: '',
   endTime: '',
-  isFuture: false
+  isFuture: false,
+  repeatWeeks: 1 // 重复排课周数，1 表示仅当天
 })
+
+// 重复排课选项：索引 0 → 1 周（不重复），索引 i → i+1 周
+const repeatOptions = ['不重复', ...Array.from({ length: 11 }, (_, i) => `连续${i + 2}周`)]
 
 // 日历数据
 interface CalendarDay {
@@ -384,7 +399,8 @@ const resetForm = () => {
     date: dayjs().format('YYYY-MM-DD'),
     startTime: '',
     endTime: '',
-    isFuture: false
+    isFuture: false,
+    repeatWeeks: 1
   }
 }
 
@@ -413,6 +429,36 @@ const onEndTimeChange = (e: any) => {
 // 未来课时开关
 const onFutureChange = (e: any) => {
   recordForm.value.isFuture = e.detail.value
+}
+
+// 重复排课选择
+const onRepeatChange = (e: any) => {
+  recordForm.value.repeatWeeks = Number(e.detail.value) + 1
+}
+
+// 时间字符串转分钟
+const timeToMinutes = (t: string): number => {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+
+// 检测某天是否存在时间段重叠（excludeIndex 为编辑时需排除的原记录下标）
+const hasTimeConflict = (
+  date: string,
+  start: string,
+  end: string,
+  excludeIndex = -1
+): boolean => {
+  const s = timeToMinutes(start)
+  const e = timeToMinutes(end)
+  return store.getClassByDate(date).some((r, i) => {
+    if (i === excludeIndex) return false
+    if (!r.time || r.time.length < 2) return false
+    const rs = timeToMinutes(r.time[0])
+    const re = timeToMinutes(r.time[1])
+    // 两区间重叠：起点均早于对方终点
+    return s < re && rs < e
+  })
 }
 
 // 显示操作菜单
@@ -477,7 +523,8 @@ const editRecord = (record: TodayClass, index: number) => {
     date: selectedDate.value,
     startTime: record.time[0],
     endTime: record.time[1],
-    isFuture: record.isFuture || false
+    isFuture: record.isFuture || false,
+    repeatWeeks: 1
   }
   showPopup.value = true
 }
@@ -501,29 +548,46 @@ const submitRecord = () => {
     uni.showToast({ title: '结束时间必须大于开始时间', icon: 'none' })
     return
   }
-  
+
+  // 时间冲突检测（编辑时排除原记录自身；仅对当天基准日期检测）
+  const excludeIndex =
+    isEdit.value && recordForm.value.date === editingDate.value
+      ? editingRecordIndex.value
+      : -1
+  if (hasTimeConflict(recordForm.value.date, recordForm.value.startTime, recordForm.value.endTime, excludeIndex)) {
+    uni.showModal({
+      title: '时间冲突',
+      content: '该时间段与当天已有课程重叠，仍要继续吗？',
+      confirmColor: '#ff6b7a',
+      success: (res) => {
+        if (res.confirm) doSaveRecord()
+      }
+    })
+    return
+  }
+
+  doSaveRecord()
+}
+
+// 真正执行保存（含重复排课）
+const doSaveRecord = () => {
+  const { studentId, date, startTime, endTime, isFuture, repeatWeeks } = recordForm.value
+
   if (isEdit.value) {
     // 删除用原始日期，新增用表单日期，支持编辑时修改日期而不错乱
     store.deleteClassRecord(editingDate.value, editingRecordIndex.value)
-    store.createClassRecordAction(
-      recordForm.value.date,
-      recordForm.value.studentId,
-      recordForm.value.startTime,
-      recordForm.value.endTime,
-      recordForm.value.isFuture
-    )
+    store.createClassRecordAction(date, studentId, startTime, endTime, isFuture)
     uni.showToast({ title: '修改成功', icon: 'success' })
   } else {
-    store.createClassRecordAction(
-      recordForm.value.date,
-      recordForm.value.studentId,
-      recordForm.value.startTime,
-      recordForm.value.endTime,
-      recordForm.value.isFuture
-    )
-    uni.showToast({ title: '添加成功', icon: 'success' })
+    // 重复排课：从基准日期起每隔 7 天生成一节
+    const weeks = repeatWeeks > 0 ? repeatWeeks : 1
+    for (let i = 0; i < weeks; i++) {
+      const d = dayjs(date).add(i * 7, 'day').format('YYYY-MM-DD')
+      store.createClassRecordAction(d, studentId, startTime, endTime, isFuture)
+    }
+    uni.showToast({ title: weeks > 1 ? `已添加 ${weeks} 节` : '添加成功', icon: 'success' })
   }
-  
+
   closePopup()
 }
 

@@ -78,7 +78,6 @@ page.no-scroll {
   background: #ffffff;
   border-radius: 24rpx;
   padding: 32rpx;
-  margin-bottom: 24rpx;
   box-shadow: 0 4rpx 20rpx rgba(255, 182, 193, 0.15);
   transition: all 0.3s ease;
 }
