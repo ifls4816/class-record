@@ -333,19 +333,6 @@ const closeDetailPopup = () => {
 </script>
 
 <style scoped>
-/* 页面包装器 */
-.page-wrapper {
-  min-height: 100vh;
-}
-
-.page-wrapper.no-scroll {
-  overflow: hidden;
-  height: 100vh;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
-}
 .container {
   padding-bottom: 40rpx;
 }

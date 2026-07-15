@@ -4,11 +4,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Student, TodayClass, ClassData, StorageData } from '@/types'
-import { 
-  createStudent as createStudentObj, 
-  createTodayClass, 
-  parseDate, 
-  minutesToHours 
+import {
+  createStudent as createStudentObj,
+  createTodayClass,
+  parseDate,
+  minutesToHours
 } from '@/utils/common'
 import { uploadToWebDAV, downloadFromWebDAV, isWebDAVConfigured } from '@/utils/webdav'
 import { debounce } from '@/utils/common'
@@ -69,10 +69,10 @@ export const useAppStore = defineStore('app', () => {
     try {
       const storedStudents = uni.getStorageSync(STORAGE_KEYS.STUDENTS)
       const storedClassData = uni.getStorageSync(STORAGE_KEYS.CLASS)
-      
+
       students.value = storedStudents || []
       classData.value = storedClassData || {}
-      
+
       console.log('数据初始化完成', {
         studentCount: students.value.length,
         hasClassData: Object.keys(classData.value).length > 0
@@ -134,10 +134,11 @@ export const useAppStore = defineStore('app', () => {
     // 添加课程记录
     classData.value[year][month][day].push(classItem)
     
-    // 按时间排序
+    // 按开始时间排序（比较完整的 "HH:MM"，字典序即为时间先后）
     classData.value[year][month][day].sort((a, b) => {
-      // @ts-ignore
-      return a.time[0].slice(0, 2).localeCompare(b.time[0].slice(0, 2))
+      const timeA = a.time[0] || ''
+      const timeB = b.time[0] || ''
+      return timeA.localeCompare(timeB)
     })
     
     // 保存到存储

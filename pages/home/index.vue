@@ -101,7 +101,7 @@
       <!-- 日期选择 -->
       <view class="form-item">
         <text class="form-label">上课日期</text>
-        <picker mode="date" :value="recordForm.date" @change="onDateChange">
+        <picker mode="date" :value="recordForm.date" :start="pickerStart" :end="pickerEnd" @change="onDateChange">
           <view class="picker-value">
             {{ recordForm.date || '请选择日期' }}
             <text class="picker-arrow">›</text>
@@ -173,10 +173,16 @@ const currentMonth = ref(dayjs().month() + 1)
 const selectedDate = ref(dayjs().format('YYYY-MM-DD'))
 const weekDays = ['日', '一', '二', '三', '四', '五', '六']
 
+// 日期选择范围，避免选到离谱的年份（未来课时预留一年）
+const pickerStart = '2020-01-01'
+const pickerEnd = dayjs().add(1, 'year').format('YYYY-MM-DD')
+
 // 弹窗相关
 const showPopup = ref(false)
 const isEdit = ref(false)
 const editingRecordIndex = ref(-1)
+// 编辑时记录的原始日期，防止用户在弹窗内改日期后删错原记录
+const editingDate = ref('')
 const currentRecord = ref<TodayClass | null>(null)
 const currentRecordIndex = ref(-1)
 
@@ -465,6 +471,7 @@ const markAsAttended = (record: TodayClass, index: number) => {
 const editRecord = (record: TodayClass, index: number) => {
   isEdit.value = true
   editingRecordIndex.value = index
+  editingDate.value = selectedDate.value
   recordForm.value = {
     studentId: record.studentId,
     date: selectedDate.value,
@@ -496,7 +503,8 @@ const submitRecord = () => {
   }
   
   if (isEdit.value) {
-    store.deleteClassRecord(recordForm.value.date, editingRecordIndex.value)
+    // 删除用原始日期，新增用表单日期，支持编辑时修改日期而不错乱
+    store.deleteClassRecord(editingDate.value, editingRecordIndex.value)
     store.createClassRecordAction(
       recordForm.value.date,
       recordForm.value.studentId,
@@ -547,25 +555,6 @@ const deleteRecord = (record: TodayClass, index: number) => {
 <style scoped>
 .container {
   padding-bottom: 140rpx;
-}
-
-.container.no-scroll {
-  overflow: hidden;
-  height: 100vh;
-}
-
-/* 页面包装器 */
-.page-wrapper {
-  min-height: 100vh;
-}
-
-.page-wrapper.no-scroll {
-  overflow: hidden;
-  height: 100vh;
-  position: fixed;
-  width: 100%;
-  top: 0;
-  left: 0;
 }
 
 .calendar-card {

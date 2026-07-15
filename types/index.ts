@@ -7,7 +7,7 @@
  */
 export interface TodayClass {
   studentId: number | null
-  time: [string, string] | []
+  time: [string, string] // [开始时间, 结束时间]
   timeDiff: number
   isFuture?: boolean // 是否是未来课时
 }

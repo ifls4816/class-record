@@ -48,6 +48,25 @@ page.no-scroll {
   height: 100vh;
 }
 
+/* 页面包装器（弹窗打开时锁定滚动，各页面通用） */
+.page-wrapper {
+  min-height: 100vh;
+}
+
+.page-wrapper.no-scroll {
+  overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+.container.no-scroll {
+  overflow: hidden;
+  height: 100vh;
+}
+
 /* 全局容器 */
 .container {
   padding: 24rpx;
