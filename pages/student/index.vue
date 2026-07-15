@@ -35,21 +35,31 @@
         </view>
       </view>
 
-      <!-- 禁用的学生 -->
+      <!-- 禁用的学生（默认折叠，点击展开） -->
       <view v-if="disabledStudents.length > 0" class="disabled-section">
-        <view
-          class="student-item fade-in"
-          v-for="student in disabledStudents"
-          :key="student.id"
-          @longpress="showActionSheet(student)"
-        >
-          <view class="student-card disabled">
-            <view class="student-avatar">
-              <text class="avatar-text">{{ student.name.charAt(0) }}</text>
-            </view>
-            <view class="student-info">
-              <text class="student-name">{{ student.name }}</text>
-              <text class="student-date">{{ formatDateDisplay(student.createTime) }}</text>
+        <view class="disabled-header" @click="showDisabled = !showDisabled">
+          <view class="disabled-header-left">
+            <text class="disabled-dot">·</text>
+            <text class="disabled-title">已禁用学生</text>
+            <text class="disabled-badge">{{ disabledStudents.length }}</text>
+          </view>
+          <text class="disabled-arrow" :class="{ expanded: disabledExpanded }">›</text>
+        </view>
+        <view v-if="disabledExpanded" class="disabled-grid">
+          <view
+            class="student-item fade-in"
+            v-for="student in disabledStudents"
+            :key="student.id"
+            @longpress="showActionSheet(student)"
+          >
+            <view class="student-card disabled">
+              <view class="student-avatar">
+                <text class="avatar-text">{{ student.name.charAt(0) }}</text>
+              </view>
+              <view class="student-info">
+                <text class="student-name">{{ student.name }}</text>
+                <text class="student-date">{{ formatDateDisplay(student.createTime) }}</text>
+              </view>
             </view>
           </view>
         </view>
@@ -178,6 +188,10 @@ const activeStudents = computed(() => {
 const disabledStudents = computed(() => {
   return filteredStudents.value.filter(student => student.disabled)
 })
+
+// 禁用学生默认折叠；搜索时自动展开以便看到匹配结果
+const showDisabled = ref(false)
+const disabledExpanded = computed(() => showDisabled.value || !!searchKeyword.value.trim())
 
 // 清除搜索
 const clearSearch = () => {
@@ -405,12 +419,73 @@ const deleteStudent = (student: Student) => {
 /* 禁用学生区域 */
 .disabled-section {
   grid-column: span 2;
+  margin-top: 28rpx;
+}
+
+.disabled-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 18rpx;
+  padding: 22rpx 28rpx;
+  box-shadow: 0 4rpx 16rpx rgba(255, 182, 193, 0.12);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.disabled-header:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(255, 182, 193, 0.08);
+}
+
+.disabled-header-left {
+  display: flex;
+  align-items: center;
+}
+
+/* 与统计页老师姓名后的“·”大小、间距保持一致（颜色仍为灰色） */
+.disabled-dot {
+  font-size: 28rpx;
+  color: #d1d5db;
+  line-height: 1;
+  margin-right: 8rpx;
+}
+
+.disabled-title {
+  font-size: 27rpx;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.disabled-badge {
+  min-width: 32rpx;
+  text-align: center;
+  font-size: 20rpx;
+  color: #ff6b7a;
+  background: #ffeef0;
+  border-radius: 20rpx;
+  padding: 2rpx 14rpx;
+  font-weight: 600;
+  margin-left: 12rpx;
+}
+
+.disabled-arrow {
+  font-size: 34rpx;
+  color: #d1d5db;
+  font-weight: 300;
+  transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.disabled-arrow.expanded {
+  transform: rotate(90deg);
+  color: #ff9aa2;
+}
+
+.disabled-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16rpx;
-  margin-top: 16rpx;
-  padding-top: 16rpx;
-  border-top: 2rpx solid #f3f4f6;
+  margin-top: 18rpx;
 }
 
 .student-card.disabled {
